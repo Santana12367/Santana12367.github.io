@@ -1,0 +1,425 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans)}
+.app{transition:background .2s}
+.app.light{--bg1:#ffffff;--bg2:#f4f4f5;--bg3:#ebebec;--t1:#111110;--t2:#555553;--t3:#888786;--b1:#d8d8d5;--b2:#e5e5e2}
+.app.dark{--bg1:var(--color-background-primary);--bg2:var(--color-background-secondary);--bg3:var(--color-background-tertiary,#1e1e1e);--t1:var(--color-text-primary);--t2:var(--color-text-secondary);--t3:var(--color-text-tertiary);--b1:var(--color-border-secondary);--b2:var(--color-border-tertiary)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 220px;gap:20px;padding:1.5rem;max-width:940px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.brand{font-size:22px;font-weight:500;letter-spacing:-0.5px}
+.brand-plan{color:#ffffff}
+.brand-it{/* set by JS */}
+.header-right{display:flex;align-items:center;gap:10px}
+.date-chip{font-size:12px;color:var(--t3);background:var(--bg2);border:0.5px solid var(--b2);border-radius:999px;padding:4px 12px}
+
+/* Stats row */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:1rem}
+.stat{background:var(--bg2);border-radius:var(--border-radius-md);padding:.75rem 1rem}
+.stat-n{font-size:20px;font-weight:500;color:var(--t1)}
+.stat-l{font-size:11px;color:var(--t3);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+
+/* Progress */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
+.prog-wrap{flex:1;background:var(--bg2);border-radius:999px;height:6px;overflow:hidden}
+.prog{height:6px;border-radius:999px;transition:width .4s}
+.prog-pct{font-size:12px;font-weight:500;color:var(--t2);min-width:32px;text-align:right}
+
+/* Add card */
+.add-card{background:var(--bg1);border:0.5px solid var(--b2);border-radius:var(--border-radius-lg);padding:1rem 1.125rem;margin-bottom:1.125rem}
+.add-row{display:flex;gap:8px;margin-bottom:10px}
+.add-row input{flex:1;background:var(--bg2);color:var(--t1);border:0.5px solid var(--b1);border-radius:var(--border-radius-md);padding:.5rem .8rem;font-size:13px;outline:none;font-family:inherit}
+.add-row input::placeholder{color:var(--t3)}
+.meta-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.meta-row select,.meta-row input[type=time]{background:var(--bg2);color:var(--t1);border:0.5px solid var(--b1);border-radius:var(--border-radius-md);padding:.4rem .65rem;font-size:12px;outline:none;font-family:inherit}
+.meta-row select{flex:1;min-width:120px}
+.meta-row input[type=time]{width:115px}
+.add-btn{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:500;padding:.45rem .9rem;border-radius:var(--border-radius-md);cursor:pointer;white-space:nowrap;border:0.5px solid var(--b1);color:var(--t1);background:var(--bg1)}
+.add-btn:hover{background:var(--bg2)}
+
+/* Filters */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.125rem}
+.f{font-size:11px;padding:4px 12px;border-radius:999px;border:0.5px solid var(--b1);background:transparent;cursor:pointer;color:var(--t2);transition:all .15s;font-family:inherit}
+
+/* Tasks */
+.tasks{display:flex;flex-direction:column;gap:7px}
+.section-lbl{font-size:10px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.08em;margin:.75rem 0 .3rem .25rem;display:flex;align-items:center;gap:5px}
+.task{display:flex;align-items:center;gap:11px;background:var(--bg1);border:0.5px solid var(--b2);border-radius:var(--border-radius-lg);padding:.75rem 1rem;transition:opacity .2s}
+.task.done{opacity:.4}
+.task.done .t-title{text-decoration:line-through;color:var(--t2)}
+.chk{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--b1);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.t-body{flex:1;min-width:0}
+.t-title{font-size:13px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.t-sub{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pill{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:500}
+.p-hw{background:#EEEDFE;color:#3C3489}
+.p-study{background:#E1F5EE;color:#085041}
+.p-personal{background:#FAEEDA;color:#633806}
+.p-other{background:#F1EFE8;color:#444441}
+.t-time{font-size:11px;color:var(--t2);display:flex;align-items:center;gap:3px}
+.xp-tag{font-size:10px;font-weight:500}
+.del{background:transparent;border:none;cursor:pointer;color:var(--t3);padding:3px 4px;border-radius:5px;font-size:15px;display:flex;align-items:center;flex-shrink:0}
+.del:hover{color:#E24B4A}
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--t2);font-size:13px}
+
+/* Notif */
+.notif-bar{border-radius:var(--border-radius-md);padding:.6rem .9rem;font-size:12px;display:flex;align-items:center;gap:8px;margin-bottom:1rem}
+
+/* Sidebar */
+.sidebar{display:flex;flex-direction:column;gap:14px}
+.sb-card{background:var(--bg1);border:0.5px solid var(--b2);border-radius:var(--border-radius-lg);padding:1rem 1.125rem}
+.sb-title{font-size:11px;font-weight:500;color:var(--t3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+
+/* XP */
+.xp-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:.5rem}
+.xp-level-txt{font-size:14px;font-weight:500;color:var(--t1)}
+.xp-tier{font-size:11px;color:var(--t2);margin-top:2px}
+.xp-badge{font-size:20px}
+.xp-bar-wrap{background:var(--bg2);border-radius:999px;height:6px;overflow:hidden;margin-bottom:.35rem}
+.xp-bar{height:6px;border-radius:999px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.xp-meta{display:flex;justify-content:space-between;font-size:10px;color:var(--t3)}
+.xp-total-row{font-size:10px;color:var(--t3);margin-top:.5rem;padding-top:.5rem;border-top:0.5px solid var(--b2)}
+
+/* Timeline */
+.tl{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:9px;align-items:flex-start;padding-bottom:12px;position:relative}
+.tl-item:last-child{padding-bottom:0}
+.tl-item:not(:last-child)::before{content:'';position:absolute;left:5px;top:14px;bottom:0;width:1px;background:var(--b2)}
+.tl-dot{width:11px;height:11px;border-radius:50%;border:1.5px solid;background:var(--bg1);flex-shrink:0;margin-top:2px;z-index:1}
+.tl-info{flex:1;min-width:0}
+.tl-time-lbl{font-size:10px;font-weight:500;margin-bottom:1px}
+.tl-name{font-size:12px;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tl-name.done{text-decoration:line-through;color:var(--t2)}
+.sb-empty{font-size:12px;color:var(--t3);text-align:center;padding:.4rem 0}
+
+/* Customize */
+.cc-section{display:flex;flex-direction:column;gap:10px}
+.cc-row{display:flex;flex-direction:column;gap:4px}
+.cc-lbl{font-size:11px;color:var(--t2)}
+.swatches{display:flex;gap:5px;flex-wrap:wrap}
+.sw{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0}
+.sw.active{border-color:var(--t1);transform:scale(1.2)}
+
+/* Theme toggle */
+.theme-row{display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:var(--border-radius-md);padding:.5rem .75rem;cursor:pointer;border:0.5px solid var(--b2)}
+.theme-label{font-size:12px;color:var(--t2);display:flex;align-items:center;gap:6px}
+.track{width:30px;height:17px;border-radius:999px;background:var(--b1);position:relative;transition:background .2s;flex-shrink:0}
+.thumb{width:13px;height:13px;border-radius:50%;background:#fff;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.track.on .thumb{transform:translateX(13px)}
+
+/* Level up toast — using normal flow overlay trick */
+.toast-overlay{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:999}
+.lvl-toast{background:var(--bg1);border:1.5px solid gold;border-radius:var(--border-radius-lg);padding:1.5rem 2rem;text-align:center;opacity:0;transform:scale(.85);transition:all .3s;pointer-events:none}
+.lvl-toast.show{opacity:1;transform:scale(1)}
+.toast-emoji{font-size:32px;margin-bottom:.4rem}
+.toast-title{font-size:16px;font-weight:500;color:var(--t1);margin-bottom:.2rem}
+.toast-sub{font-size:12px;color:var(--t2)}
+
+.xp-pop{position:fixed;pointer-events:none;font-size:12px;font-weight:500;z-index:998;opacity:0;transition:opacity .4s,top .8s}
+</style>
+
+<div class="app dark" id="app">
+<div class="layout">
+  <div class="main">
+    <div class="header">
+      <div class="brand"><span class="brand-plan">Plan</span><span id="brandIt">It</span></div>
+      <div class="header-right">
+        <div class="date-chip" id="dateChip"></div>
+      </div>
+    </div>
+
+    <div id="notif" class="notif-bar" style="display:none">
+      <i class="ti ti-bell" aria-hidden="true"></i>
+      <span id="notifMsg"></span>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-n" id="sTotal">0</div><div class="stat-l">Total</div></div>
+      <div class="stat"><div class="stat-n" id="sDone">0</div><div class="stat-l">Done</div></div>
+      <div class="stat"><div class="stat-n" id="sLeft">0</div><div class="stat-l">Left</div></div>
+    </div>
+
+    <div class="prog-row">
+      <div class="prog-wrap"><div class="prog" id="prog" style="width:0%"></div></div>
+      <div class="prog-pct" id="progPct">0%</div>
+    </div>
+
+    <div class="add-card">
+      <div class="add-row">
+        <input type="text" id="inp" placeholder="Add an assignment or plan…"/>
+      </div>
+      <div class="meta-row">
+        <select id="typ">
+          <option value="hw">📚 Homework</option>
+          <option value="study">📖 Study</option>
+          <option value="personal">⭐ Personal</option>
+          <option value="other">📌 Other</option>
+        </select>
+        <input type="time" id="tim"/>
+        <button class="add-btn" onclick="add()"><i class="ti ti-plus" aria-hidden="true"></i> Add</button>
+      </div>
+    </div>
+
+    <div class="filters" id="filterRow">
+      <button class="f on" onclick="filt('all',this)">All</button>
+      <button class="f" onclick="filt('hw',this)">Homework</button>
+      <button class="f" onclick="filt('study',this)">Study</button>
+      <button class="f" onclick="filt('personal',this)">Personal</button>
+      <button class="f" onclick="filt('other',this)">Other</button>
+      <button class="f" onclick="filt('pending',this)">Pending</button>
+      <button class="f" onclick="filt('done',this)">Done</button>
+    </div>
+
+    <div id="list" class="tasks"></div>
+  </div>
+
+  <div class="sidebar">
+    <!-- XP -->
+    <div class="sb-card">
+      <div class="sb-title"><i class="ti ti-trophy" aria-hidden="true" style="font-size:13px"></i> Progress</div>
+      <div class="xp-head">
+        <div><div class="xp-level-txt" id="xpLevel">Level 1</div><div class="xp-tier" id="xpTier">Freshman</div></div>
+        <div class="xp-badge" id="xpBadge">🌱</div>
+      </div>
+      <div class="xp-bar-wrap"><div class="xp-bar" id="xpBar" style="width:0%"></div></div>
+      <div class="xp-meta"><span id="xpCur">0 XP</span><span id="xpNext">100 to next</span></div>
+      <div class="xp-total-row" id="xpTotal">Total XP: 0</div>
+    </div>
+
+    <!-- Timeline -->
+    <div class="sb-card">
+      <div class="sb-title"><i class="ti ti-clock" aria-hidden="true" style="font-size:13px"></i> Today's schedule</div>
+      <div class="tl" id="timeline"></div>
+    </div>
+
+    <!-- Customize -->
+    <div class="sb-card">
+      <div class="sb-title"><i class="ti ti-palette" aria-hidden="true" style="font-size:13px"></i> Customize</div>
+      <div class="cc-section">
+        <div class="cc-row"><div class="cc-lbl">Accent</div><div class="swatches" id="swAccent"></div></div>
+        <div class="cc-row"><div class="cc-lbl">Brand color</div><div class="swatches" id="swBrand"></div></div>
+        <div class="cc-row"><div class="cc-lbl">Progress bar</div><div class="swatches" id="swProg"></div></div>
+        <div class="cc-row">
+          <div class="cc-lbl">Theme</div>
+          <div class="theme-row" onclick="toggleTheme()">
+            <div class="theme-label"><span id="themeIcon">🌙</span><span id="themeLbl">Dark mode</span></div>
+            <div class="track" id="track"><div class="thumb"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="toast-overlay">
+  <div class="lvl-toast" id="lvlToast">
+    <div class="toast-emoji" id="toastEmoji">🎉</div>
+    <div class="toast-title" id="toastTitle">Level Up!</div>
+    <div class="toast-sub" id="toastSub">You reached Level 2</div>
+  </div>
+</div>
+
+<script>
+const KEY='planit_v8',CKEY='planit_colors_v3',XKEY='planit_xp';
+const tMap={hw:'Homework',study:'Study',personal:'Personal',other:'Other'};
+const pMap={hw:'p-hw',study:'p-study',personal:'p-personal',other:'p-other'};
+const xpMap={hw:30,study:25,personal:15,other:20};
+const tiers=[
+  {min:1,max:10,t:'Freshman',b:'🌱'},{min:11,max:20,t:'Sophomore',b:'📖'},
+  {min:21,max:30,t:'Junior',b:'✏️'},{min:31,max:40,t:'Senior',b:'🎓'},
+  {min:41,max:50,t:'Honor Student',b:'⭐'},{min:51,max:60,t:"Dean's List",b:'🏅'},
+  {min:61,max:70,t:'Scholar',b:'🔬'},{min:71,max:80,t:'Academic Pro',b:'💡'},
+  {min:81,max:90,t:'Valedictorian',b:'🏆'},{min:91,max:99,t:'Legend',b:'🔥'},
+  {min:100,max:100,t:'MAX LEVEL',b:'👑'},
+];
+const palette=[
+  {c:'#7F77DD',n:'Purple'},{c:'#1D9E75',n:'Teal'},{c:'#378ADD',n:'Blue'},
+  {c:'#D85A30',n:'Coral'},{c:'#D4537E',n:'Pink'},{c:'#BA7517',n:'Amber'},
+  {c:'#639922',n:'Green'},{c:'#E24B4A',n:'Red'},{c:'#888780',n:'Gray'},
+];
+let tasks=[],cur='all',xp={total:0},colors={accent:'#7F77DD',brand:'#7F77DD',prog:'#7F77DD',light:false};
+
+function load(){try{tasks=JSON.parse(localStorage.getItem(KEY))||[];}catch(e){tasks=[];}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(tasks));}catch(e){}}
+function loadXP(){try{const s=localStorage.getItem(XKEY);if(s)xp={...xp,...JSON.parse(s)};}catch(e){}}
+function saveXP(){try{localStorage.setItem(XKEY,JSON.stringify(xp));}catch(e){}}
+function loadC(){try{const s=localStorage.getItem(CKEY);if(s)colors={...colors,...JSON.parse(s)};}catch(e){}}
+function saveC(){try{localStorage.setItem(CKEY,JSON.stringify(colors));}catch(e){}}
+
+function fmt(t){if(!t)return'';const[h,m]=t.split(':').map(Number);const a=h>=12?'PM':'AM';return((h%12)||12)+':'+(m<10?'0'+m:m)+' '+a;}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function sorted(arr){return[...arr].sort((a,b)=>{if(a.time&&b.time)return a.time.localeCompare(b.time);if(a.time&&!b.time)return-1;if(!a.time&&b.time)return 1;return a.created-b.created;});}
+function vis(){return tasks.filter(t=>cur==='all'?true:cur==='done'?t.done:cur==='pending'?!t.done:t.type===cur);}
+function getTier(lvl){return tiers.find(t=>lvl>=t.min&&lvl<=t.max)||tiers[0];}
+function xpForLvl(l){if(l>=100)return Infinity;return Math.floor(100*l*Math.pow(1.08,l-1));}
+function xpToLvl(l){let a=0;for(let i=1;i<l;i++)a+=xpForLvl(i);return a;}
+function calcLvl(tot){let l=1,a=0;while(l<100){const n=xpForLvl(l);if(a+n>tot)break;a+=n;l++;}return{level:l,into:tot-xpToLvl(l),need:xpForLvl(l)};}
+
+function applyColors(){
+  document.getElementById('brandIt').style.color=colors.brand;
+  document.getElementById('prog').style.background=colors.prog;
+  document.getElementById('xpBar').style.background=colors.accent;
+  document.querySelectorAll('.f.on').forEach(e=>{e.style.background=colors.accent;e.style.borderColor=colors.accent;e.style.color='#fff';});
+  document.querySelectorAll('.f:not(.on)').forEach(e=>{e.style.background='';e.style.borderColor='';e.style.color='';});
+  if(colors.light)document.getElementById('track').style.background=colors.accent;
+  else document.getElementById('track').style.background='';
+}
+
+function applyTheme(){
+  const app=document.getElementById('app');
+  app.classList.toggle('light',colors.light);
+  app.classList.toggle('dark',!colors.light);
+  const track=document.getElementById('track');
+  track.classList.toggle('on',colors.light);
+  document.getElementById('themeIcon').textContent=colors.light?'☀️':'🌙';
+  document.getElementById('themeLbl').textContent=colors.light?'Light mode':'Dark mode';
+  // "Plan" always white regardless of mode
+  document.querySelector('.brand-plan').style.color='#ffffff';
+  applyColors();
+}
+function toggleTheme(){colors.light=!colors.light;saveC();applyTheme();render();}
+
+function buildSwatches(){
+  ['swAccent','swBrand','swProg'].forEach((id,i)=>{
+    const key=['accent','brand','prog'][i];
+    document.getElementById(id).innerHTML=palette.map(p=>`<div class="sw${colors[key]===p.c?' active':''}" style="background:${p.c}" title="${p.n}" onclick="setColor('${key}','${p.c}',this)"></div>`).join('');
+  });
+}
+function setColor(key,val,el){
+  colors[key]=val;saveC();
+  el.closest('.swatches').querySelectorAll('.sw').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  applyColors();
+}
+
+function renderXP(){
+  const{level,into,need}=calcLvl(xp.total);
+  const tier=getTier(level);
+  const pct=level>=100?100:Math.round(into/need*100);
+  document.getElementById('xpLevel').textContent=level>=100?'Level 100':'Level '+level;
+  document.getElementById('xpTier').textContent=tier.t;
+  document.getElementById('xpBadge').textContent=tier.b;
+  document.getElementById('xpBar').style.width=pct+'%';
+  document.getElementById('xpBar').style.background=colors.accent;
+  document.getElementById('xpCur').textContent=into+' XP';
+  document.getElementById('xpNext').textContent=level>=100?'MAX!':need+' to next';
+  document.getElementById('xpTotal').textContent='Total XP: '+xp.total;
+}
+
+function awardXP(type,el){
+  const amt=xpMap[type]||20,old=calcLvl(xp.total).level;
+  xp.total+=amt;saveXP();
+  const nw=calcLvl(xp.total).level;
+  showPop(amt,el);
+  if(nw>old)setTimeout(()=>showLvlUp(nw),600);
+  renderXP();
+}
+function revokeXP(type){xp.total=Math.max(0,xp.total-(xpMap[type]||20));saveXP();renderXP();}
+
+function showPop(amt,el){
+  const p=document.createElement('div');p.className='xp-pop';p.textContent='+'+amt+' XP';p.style.color=colors.accent;
+  document.body.appendChild(p);
+  const r=el?el.getBoundingClientRect():{top:200,left:300};
+  p.style.top=(r.top+window.scrollY)+'px';p.style.left=(r.left+window.scrollX+28)+'px';p.style.opacity='1';
+  setTimeout(()=>{p.style.opacity='0';p.style.top=(r.top+window.scrollY-36)+'px';},80);
+  setTimeout(()=>p.remove(),1100);
+}
+function showLvlUp(lvl){
+  const tier=getTier(lvl);
+  document.getElementById('toastEmoji').textContent=tier.b;
+  document.getElementById('toastTitle').textContent=lvl>=100?'MAX LEVEL! 👑':'Level Up!';
+  document.getElementById('toastSub').textContent='You reached Level '+lvl+' — '+tier.t;
+  const t=document.getElementById('lvlToast');t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function renderTimeline(){
+  const timed=sorted(tasks).filter(t=>t.time);
+  const el=document.getElementById('timeline');
+  if(!timed.length){el.innerHTML='<div class="sb-empty">No scheduled tasks yet</div>';return;}
+  el.innerHTML=timed.map(t=>`<div class="tl-item">
+    <div class="tl-dot" style="border-color:${colors.accent};${t.done?'background:'+colors.accent:'background:var(--bg1)'}"></div>
+    <div class="tl-info">
+      <div class="tl-time-lbl" style="color:${colors.accent}">${fmt(t.time)}</div>
+      <div class="tl-name${t.done?' done':''}">${esc(t.title)}</div>
+    </div>
+  </div>`).join('');
+}
+
+function render(){
+  const d=tasks.filter(t=>t.done).length;
+  document.getElementById('sTotal').textContent=tasks.length;
+  document.getElementById('sDone').textContent=d;
+  document.getElementById('sLeft').textContent=tasks.length-d;
+  const pct=tasks.length?Math.round(d/tasks.length*100):0;
+  document.getElementById('prog').style.width=pct+'%';
+  document.getElementById('progPct').textContent=pct+'%';
+  applyColors();
+  const v=sorted(vis());
+  const el=document.getElementById('list');
+  if(!v.length){el.innerHTML='<div class="empty"><i class="ti ti-clipboard-list" style="font-size:26px;display:block;margin-bottom:.5rem" aria-hidden="true"></i>Nothing here yet — add something above!</div>';renderTimeline();renderXP();return;}
+  let html='',dT=false,dU=false;
+  v.forEach(t=>{
+    if(t.time&&!dT){html+=`<div class="section-lbl"><i class="ti ti-clock" aria-hidden="true"></i> Scheduled</div>`;dT=true;}
+    if(!t.time&&!dU){if(dT)html+=`<div class="section-lbl"><i class="ti ti-list" aria-hidden="true"></i> No time set</div>`;dU=true;}
+    const xa=xpMap[t.type]||20;
+    html+=`<div class="task${t.done?' done':''}" id="t-${t.id}">
+      <button class="chk" style="border-color:${t.done?colors.accent:'var(--b1)'};background:${t.done?colors.accent:'transparent'}" onclick="toggle('${t.id}')" aria-label="${t.done?'Mark incomplete':'Mark complete'}">${t.done?`<i class="ti ti-check" style="font-size:11px;color:#fff" aria-hidden="true"></i>`:''}</button>
+      <div class="t-body">
+        <div class="t-title">${esc(t.title)}</div>
+        <div class="t-sub">
+          <span class="pill ${pMap[t.type]}">${tMap[t.type]}</span>
+          ${t.time?`<span class="t-time"><i class="ti ti-clock" aria-hidden="true" style="font-size:11px"></i>${fmt(t.time)}</span>`:''}
+          <span class="xp-tag" style="color:${colors.accent}">${t.done?'✓':'+'}${xa}xp</span>
+        </div>
+      </div>
+      <button class="del" onclick="del('${t.id}')" aria-label="Delete task"><i class="ti ti-trash" aria-hidden="true"></i></button>
+    </div>`;
+  });
+  el.innerHTML=html;
+  renderTimeline();renderXP();
+}
+
+function add(){
+  const inp=document.getElementById('inp'),title=inp.value.trim();
+  if(!title){inp.focus();return;}
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+  tasks.push({id,title,type:document.getElementById('typ').value,time:document.getElementById('tim').value,done:false,created:Date.now()});
+  save();inp.value='';document.getElementById('tim').value='';schedNotif(tasks[tasks.length-1]);render();
+}
+function toggle(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;
+  t.done=!t.done;save();
+  if(t.done)awardXP(t.type,document.getElementById('t-'+id));else revokeXP(t.type);
+  render();
+}
+function del(id){tasks=tasks.filter(x=>x.id!==id);save();render();}
+function filt(f,btn){
+  cur=f;
+  document.querySelectorAll('.f').forEach(b=>{b.classList.remove('on');b.style.background='';b.style.borderColor='';b.style.color='';});
+  btn.classList.add('on');btn.style.background=colors.accent;btn.style.borderColor=colors.accent;btn.style.color='#fff';
+  render();
+}
+function schedNotif(t){
+  if(!t.time)return;const now=new Date();const[h,m]=t.time.split(':').map(Number);
+  const tgt=new Date(now.getFullYear(),now.getMonth(),now.getDate(),h,m);
+  const diff=tgt-now;if(diff>0&&diff<86400000)setTimeout(()=>showNotif('Time for: '+t.title),diff);
+}
+function showNotif(msg){
+  document.getElementById('notifMsg').textContent=msg;
+  const el=document.getElementById('notif');el.style.display='flex';
+  el.style.background=colors.accent+'22';el.style.border='0.5px solid '+colors.accent+'66';el.style.color=colors.accent;
+  setTimeout(()=>el.style.display='none',8000);
+  if('Notification' in window&&Notification.permission==='granted')new Notification('PlanIt',{body:msg});
+  else if('Notification' in window&&Notification.permission!=='denied')Notification.requestPermission().then(p=>{if(p==='granted')new Notification('PlanIt',{body:msg});});
+}
+
+document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter')add();});
+document.getElementById('dateChip').textContent=new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'});
+
+loadC();loadXP();load();tasks.forEach(schedNotif);buildSwatches();applyTheme();render();
+</script>
